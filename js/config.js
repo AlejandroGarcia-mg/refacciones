@@ -3,7 +3,7 @@
    ============================================================ */
 window.CONFIG = {
   MOS_MAX: 1.5,                         // Months of Supply máximo permitido
-  AGENCIA_ACTUAL: "Matriz Guadalajara", // Agencia desde la que se genera el pedido
+  AGENCIA_ACTUAL: "MG Celaya",          // Agencia (sucursal MG) desde la que se genera el pedido
   MONEDA: "MXN"
 };
 

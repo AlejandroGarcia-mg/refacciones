@@ -57,9 +57,9 @@ const DIST_MOVIMIENTO = [
 ];
 
 const TRASLADOS = [
-  { folio:"TR-0001", fecha:"2026-07-09", cod:"RF-3001", desc:"Aceite sintético 5W-30", cant:20, origen:"Sucursal Tlaquepaque", destino:"Matriz Guadalajara", est:"pen" },
-  { folio:"TR-0002", fecha:"2026-07-08", cod:"RF-1003", desc:"Disco de freno ventilado 280mm", cant:6, origen:"Sucursal Norte", destino:"Matriz Guadalajara", est:"apr" },
-  { folio:"TR-0003", fecha:"2026-07-05", cod:"RF-2001", desc:"Filtro de aceite premium", cant:8, origen:"Sucursal Zapopan", destino:"Sucursal Tlaquepaque", est:"rec" },
+  { folio:"TR-0001", fecha:"2026-07-09", cod:"RF-3001", desc:"Aceite sintético 5W-30", cant:20, origen:"MG Salamanca", destino:"MG Celaya", est:"pen" },
+  { folio:"TR-0002", fecha:"2026-07-08", cod:"RF-1003", desc:"Disco de freno ventilado 280mm", cant:6, origen:"MG Guanajuato", destino:"MG Celaya", est:"apr" },
+  { folio:"TR-0003", fecha:"2026-07-05", cod:"RF-2001", desc:"Filtro de aceite premium", cant:8, origen:"MG Irapuato", destino:"MG Salamanca", est:"rec" },
 ];
 
 const BACKORDER = [
