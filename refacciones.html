@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Módulo Refacciones · Solicitud de Pedido</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<!-- ===================== SIDEBAR ===================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="logo">R</div>
+    <div>
+      <h1>REFACCIONES</h1>
+      <span>Sistema de Gestión</span>
+    </div>
+  </div>
+  <nav class="nav">
+    <div class="group-title">Módulo Refacciones</div>
+    <a class="active" onclick="showModule(this)"><span class="ic">📦</span> Solicitud de Pedido</a>
+
+    <div class="group-title">Otros</div>
+    <a><span class="ic">🏬</span> Almacenes</a>
+    <a><span class="ic">🔧</span> Catálogo Refacciones</a>
+    <a><span class="ic">📊</span> Reportes</a>
+  </nav>
+  <div class="sidebar-foot">v1.1 · Prototipo visual<br>© Grupo MG</div>
+</aside>
+
+<!-- ===================== MAIN ===================== -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="crumbs">Módulo Refacciones · <b>Solicitud de Pedido</b></div>
+      <h2>Solicitud de Pedido</h2>
+    </div>
+    <div class="user-chip">
+      <div style="text-align:right">
+        <div style="font-weight:600;color:var(--text)">Área de Compras</div>
+        <div id="agenciaLbl">Agencia actual</div>
+      </div>
+      <div class="avatar">MG</div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Pestañas -->
+    <div class="tabs">
+      <button class="tab active" id="tabConsulta" onclick="switchTab('consulta')"><span class="ic">📋</span> Consulta Pedidos</button>
+      <button class="tab" id="tabNueva" onclick="switchTab('nueva')"><span class="ic">＋</span> Nueva Solicitud</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpis">
+      <div class="kpi"><div class="label">Pedidos totales</div><div class="value" id="kpiTot">0</div></div>
+      <div class="kpi"><div class="label">Pendientes</div><div class="value warn" id="kpiPen">0</div></div>
+      <div class="kpi"><div class="label">Recibidos</div><div class="value ok" id="kpiRec">0</div></div>
+      <div class="kpi"><div class="label">Con alerta de MOS</div><div class="value danger" id="kpiMos">0</div></div>
+    </div>
+
+    <!-- CONSULTA PEDIDOS -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Consulta de Pedidos</h3>
+          <div class="sub">Detalle de todas las solicitudes registradas</div>
+        </div>
+        <div class="toolbar">
+          <div class="search">
+            <span>🔎</span>
+            <input type="text" id="tblSearch" placeholder="Buscar pedido, código, proveedor…" oninput="filterTable()">
+          </div>
+          <button class="btn btn-ghost" onclick="alert('Exportar a Excel (demo)')">⬇ Exportar</button>
+          <button class="btn btn-primary" onclick="switchTab('nueva')">＋ Nueva Solicitud</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="pedidosTable">
+          <thead>
+            <tr>
+              <th>N° Pedido</th><th>Fecha</th><th>Clave Prov.</th><th>Proveedor</th>
+              <th>Quién Solicitó</th><th>Sucursal / Agencia</th><th>Refacciones</th><th>Estatus</th>
+            </tr>
+          </thead>
+          <tbody id="pedidosBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Autocompletado de proveedores -->
+<datalist id="dlProveedores"></datalist>
+
+<!-- ===================== MODAL: NUEVA SOLICITUD ===================== -->
+<div class="overlay" id="ovNueva">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div>
+        <h3 id="nuevaTitulo">Nueva Solicitud de Pedido</h3>
+        <p id="nuevaSub">Agregue una o varias refacciones al pedido</p>
+      </div>
+      <button class="x" onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- 1. Datos del proveedor -->
+      <div class="section-title">1 · Datos del pedido</div>
+      <div class="card-block">
+        <div class="form-grid">
+          <div class="field">
+            <label>Proveedor <span class="req">*</span></label>
+            <div class="input-group">
+              <input type="text" id="proveedor" list="dlProveedores" placeholder="Escriba el nombre del proveedor…" oninput="onProveedorInput()" autocomplete="off">
+              <button class="btn btn-light btn-sm" onclick="abrirCatProveedores()">📖 Catálogo</button>
+            </div>
+            <div class="hint">Escriba el nombre (autocompleta) o abra el catálogo.</div>
+          </div>
+          <div class="field">
+            <label>Clave Proveedor</label>
+            <input type="text" id="claveProv" readonly placeholder="Se completa automáticamente">
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Agregar refacción -->
+      <div class="section-title">2 · Agregar refacción</div>
+      <div class="card-block">
+        <div class="form-grid">
+          <div class="field full">
+            <label>Código Refacción <span class="req">*</span></label>
+            <div class="input-group">
+              <input type="text" id="codigo" placeholder="Escriba el código…" oninput="onCodigoInput()" autocomplete="off">
+              <button class="btn btn-light btn-sm" onclick="abrirCatRefacciones()">🔎 Buscar refacción</button>
+            </div>
+            <div class="hint">¿No conoce el código? Use <b>Buscar refacción</b> para filtrar por descripción, categoría o marca.</div>
+
+            <div class="alert ok"   id="alOk"><span class="ai">✅</span><div id="alOkTxt"></div></div>
+            <div class="alert warn" id="alLento"><span class="ai">🐢</span><div id="alLentoTxt"></div></div>
+            <div class="alert warn" id="alObs"><span class="ai">💡</span><div id="alObsTxt"></div></div>
+          </div>
+
+          <div class="field">
+            <label>Descripción</label>
+            <input type="text" id="descripcion" readonly placeholder="—">
+          </div>
+          <div class="field">
+            <label>Unidad de Medida</label>
+            <input type="text" id="unidad" readonly placeholder="Depende de la refacción">
+          </div>
+
+          <div class="field">
+            <label>Cantidad <span class="req">*</span></label>
+            <input type="number" id="cantidad" min="0" step="1" placeholder="0" oninput="onCantidad()">
+          </div>
+          <div class="field" style="justify-content:flex-end">
+            <button class="btn btn-primary" id="btnAdd" onclick="agregarRenglon()">＋ Agregar al pedido</button>
+          </div>
+
+          <!-- MOS meter -->
+          <div class="mos-box">
+            <div class="top">
+              <div>
+                <div class="t">Índice MOS (Months of Supply)</div>
+                <div class="hint">Máximo permitido: <b>1.50</b></div>
+              </div>
+              <div class="cur" id="mosCur" style="color:var(--text-soft)">—</div>
+            </div>
+            <div class="meter">
+              <div class="fill" id="mosFill"></div>
+              <div class="limit" title="Límite 1.5"></div>
+            </div>
+            <div class="meter-legend"><span>0</span><span>0.75</span><span style="color:var(--danger);font-weight:700">1.5 (máx)</span><span>2.25</span></div>
+            <div class="mos-note" id="mosNote" style="color:var(--text-soft)">Seleccione una refacción y una cantidad.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Renglones del pedido -->
+      <div class="section-title">3 · Refacciones del pedido (<span id="lineCount">0</span>)</div>
+      <div class="card-block" style="padding:0;overflow:hidden">
+        <div class="table-wrap">
+          <table class="lines-table">
+            <thead>
+              <tr><th>#</th><th>Código</th><th>Descripción</th><th>U.M.</th><th>Cantidad</th><th>MOS</th><th></th></tr>
+            </thead>
+            <tbody id="linesBody">
+              <tr><td colspan="7" class="empty-lines">Aún no hay refacciones en el pedido.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <div class="note" id="footNote">Las refacciones con MOS &gt; 1.5 no pueden agregarse.</div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-primary" id="btnSave" onclick="guardarPedido()">✓ Registrar Pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CATÁLOGO PROVEEDORES ===================== -->
+<div class="overlay" id="ovProv">
+  <div class="modal">
+    <div class="modal-head">
+      <div><h3>Catálogo de Proveedores</h3><p>Seleccione un proveedor</p></div>
+      <button class="x" onclick="cerrar('ovProv')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="filters">
+        <div class="search"><span>🔎</span><input type="text" id="provSearch" placeholder="Buscar por clave, nombre o RFC…" oninput="renderCatProv()"></div>
+      </div>
+      <div class="cat-table-wrap">
+        <table class="cat-table">
+          <thead><tr><th>Clave</th><th>Descripción / Nombre</th><th>RFC</th><th>Contacto</th></tr></thead>
+          <tbody id="provCatBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: CATÁLOGO REFACCIONES ===================== -->
+<div class="overlay" id="ovRef">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3>Buscar Refacción</h3><p>Filtre y seleccione la refacción</p></div>
+      <button class="x" onclick="cerrar('ovRef')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="filters">
+        <div class="search"><span>🔎</span><input type="text" id="refSearch" placeholder="Buscar por código, descripción o marca…" oninput="renderCatRef()"></div>
+        <select id="refCat" onchange="renderCatRef()"><option value="">Todas las categorías</option></select>
+      </div>
+      <div class="cat-table-wrap">
+        <table class="cat-table">
+          <thead><tr><th>Código</th><th>Descripción</th><th>Categoría</th><th>Marca</th><th>U.M.</th><th>Estado (agencia actual)</th></tr></thead>
+          <tbody id="refCatBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: DETALLE DE PEDIDO ===================== -->
+<div class="overlay" id="ovDetalle">
+  <div class="modal wide">
+    <div class="modal-head">
+      <div><h3>Detalle del Pedido <span id="detTitulo" class="mono"></span></h3><p>Refacciones incluidas en el pedido</p></div>
+      <button class="x" onclick="cerrar('ovDetalle')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="det-info" id="detInfo"></div>
+      <div class="table-wrap">
+        <table class="lines-table">
+          <thead>
+            <tr><th>Código</th><th>Descripción</th><th>U. Medida</th><th>Cant.</th><th>MOS</th><th>Estatus</th></tr>
+          </thead>
+          <tbody id="detBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="note">Editar reabre el pedido para modificar proveedor y refacciones.</div>
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="cerrar('ovDetalle')">Cerrar</button>
+        <button class="btn btn-primary" onclick="abrirEdicion(detActual)">✏ Editar pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script src="js/config.js"></script>
+<script src="data/proveedores.js"></script>
+<script src="data/refacciones.js"></script>
+<script src="data/pedidos.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

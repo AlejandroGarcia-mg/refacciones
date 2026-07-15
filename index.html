@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Módulo Refacciones · ADCCore (Prototipo navegable)</title>
+<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="css/modulo.css">
+</head>
+<body>
+
+<!-- ===================== SIDEBAR (menú del módulo dentro de ADCCore) ===================== -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="logo">R</div>
+    <div>
+      <h1>REFACCIONES</h1>
+      <span>Módulo · ADCCore</span>
+    </div>
+  </div>
+  <nav class="nav" id="nav"><!-- lo genera modulo.js --></nav>
+  <div class="sidebar-foot">Prototipo navegable · datos de ejemplo<br>© Grupo MG</div>
+</aside>
+
+<!-- ===================== MAIN ===================== -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="crumbs" id="crumbs">Módulo Refacciones</div>
+      <h2 id="pageTitle">—</h2>
+    </div>
+    <div class="user-chip">
+      <div style="text-align:right">
+        <div style="font-weight:600;color:var(--text)">Gerente de Posventa</div>
+        <div id="agenciaLbl">Matriz Guadalajara</div>
+      </div>
+      <div class="avatar">MG</div>
+    </div>
+  </div>
+
+  <div class="content" id="view"><!-- lo pinta el router --></div>
+</div>
+
+<!-- Contenedor para modales (Nueva Solicitud, etc.) -->
+<div id="modalRoot"></div>
+
+<!-- ===================== DATOS Y SCRIPTS ===================== -->
+<script src="js/config.js"></script>
+<script src="data/proveedores.js"></script>
+<script src="data/refacciones.js"></script>
+<script src="data/pedidos.js"></script>
+<script src="js/modulo.js"></script>
+</body>
+</html>

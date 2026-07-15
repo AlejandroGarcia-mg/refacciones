@@ -1,0 +1,86 @@
+/* ============================================================
+   modulo.css — estilos NUEVOS del prototipo navegable.
+   Reutiliza el sistema de diseño de estilos.css (variables,
+   .panel, .kpi, .btn, .pill, tablas…) y solo agrega lo que
+   hace falta para las pantallas nuevas.
+   ============================================================ */
+
+/* Banner "esto es de ejemplo / solo lectura" */
+.demo-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--info-bg); color: #14476f;
+  border: 1px solid #bcd8ee; border-radius: 10px;
+  padding: 10px 14px; font-size: 12.5px; margin-bottom: 20px;
+}
+.demo-banner .ai { font-size: 16px; }
+
+/* Encabezado / intro de cada pantalla */
+.page-intro {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  padding: 18px 20px; margin-bottom: 20px;
+}
+.page-intro p { color: var(--text-soft); font-size: 13px; line-height: 1.6; margin-top: 4px; }
+.page-intro h3 { color: var(--brand); font-size: 15px; }
+
+/* Rejillas utilitarias */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.grid-2.wide-left { grid-template-columns: 1.4fr 1fr; }
+.mt { margin-top: 20px; }
+.spacer { height: 20px; }
+
+/* KPIs con 3 columnas cuando aplique */
+.kpis.k3 { grid-template-columns: repeat(3, 1fr); }
+.kpi .value.small { font-size: 20px; }
+
+/* Barras de distribución (Tablero de inventario) */
+.bars { display: flex; flex-direction: column; gap: 12px; }
+.bar-row { display: grid; grid-template-columns: 92px 1fr 96px; align-items: center; gap: 10px; font-size: 12.5px; }
+.bar-row .lbl { font-weight: 600; }
+.bar-track { height: 12px; border-radius: 7px; background: #e6ecf1; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 7px; }
+.bar-row .num { text-align: right; color: var(--text-soft); }
+.bar-row .num b { color: var(--text); }
+
+/* Tarjetas de alerta pequeñas */
+.mini-alert { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: #fafcfd; margin-bottom: 10px; }
+.mini-alert .ic { font-size: 20px; flex-shrink: 0; }
+.mini-alert .t { font-weight: 700; font-size: 13px; }
+.mini-alert .d { font-size: 12px; color: var(--text-soft); margin-top: 2px; }
+.mini-alert.dgr { background: var(--danger-bg); border-color: #eec2bd; }
+.mini-alert.warn { background: var(--warn-bg); border-color: #f2d79a; }
+.mini-alert.info { background: var(--info-bg); border-color: #bcd8ee; }
+
+/* Lista "qué mostrará esta pantalla" (placeholders informativos) */
+.feature { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; }
+.feature h4 { color: var(--brand-2); font-size: 12.5px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+.feature ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.feature li { display: flex; gap: 10px; font-size: 13px; line-height: 1.5; align-items: flex-start; }
+.feature li::before { content: "▸"; color: var(--brand-accent); font-weight: 700; }
+.feature li b { color: var(--text); }
+
+.tag-must { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:6px; font-size:10.5px; font-weight:700; background: var(--danger-bg); color: var(--danger); vertical-align: middle; }
+.tag-nice { display:inline-block; margin-left:6px; padding:1px 7px; border-radius:6px; font-size:10.5px; font-weight:700; background: var(--info-bg); color: var(--info); vertical-align: middle; }
+
+/* Píldora neutral extra (clasificación MEDIO / NUEVO) */
+.pill.neu { background: #eef2f5; color: var(--text-soft); }
+.pill.info { background: var(--info-bg); color: var(--info); }
+
+/* Gráfica falsa de barras verticales (Reportes) */
+.chart-fake { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding: 10px 4px 0; }
+.chart-fake .col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+.chart-fake .col .bar { width: 100%; max-width: 42px; border-radius: 6px 6px 0 0; background: linear-gradient(180deg, var(--brand-2), var(--brand)); }
+.chart-fake .col .cap { font-size: 11px; color: var(--text-soft); }
+
+/* Cuadrícula de tipos de reporte */
+.report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.report-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; background: #fafcfd; cursor: pointer; transition: box-shadow .15s, transform .05s; }
+.report-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.report-card .ic { font-size: 22px; }
+.report-card .t { font-weight: 700; font-size: 13.5px; margin-top: 8px; color: var(--brand); }
+.report-card .d { font-size: 12px; color: var(--text-soft); margin-top: 4px; line-height: 1.5; }
+
+@media (max-width: 980px) {
+  .grid-2, .grid-2.wide-left { grid-template-columns: 1fr; }
+  .kpis.k3 { grid-template-columns: 1fr; }
+}
