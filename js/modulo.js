@@ -5,12 +5,17 @@
    pantalla del módulo (como si estuviera dentro de ADCCore) y
    reaccionar: "esto sí, esto no, aquí falta".
 
+   Es un BOSQUEJO para tomar decisiones, NO la app final.
+   - Solo se incluye lo primordial y mostrable HOY.
+   - Fuera queda lo que ADCCore ya resuelve (roles/permisos → SEG)
+     y lo que aún no podemos mostrar sin datos/proceso (reportes,
+     márgenes, alertas…). Esos temas siguen en IDEAS-REFACCIONES.md.
+
    Todo son DATOS DE EJEMPLO. Nada se guarda ni se conecta a la
-   base real todavía. Cuando el negocio valide qué quiere, se
-   construye la lógica real contra el DWH (solo lectura).
+   base real todavía.
    ============================================================ */
 
-/* ---------- 1. Menú del módulo (grupos y pantallas) ---------- */
+/* ---------- 1. Menú del módulo (solo lo primordial) ---------- */
 const NAV = [
   { group: "Operación", items: [
     { id: "solicitud",  icon: "📦", title: "Solicitud de Pedido" },
@@ -19,18 +24,10 @@ const NAV = [
   ]},
   { group: "Análisis", items: [
     { id: "tablero",    icon: "📊", title: "Tablero de Inventario" },
-    { id: "margenes",   icon: "💰", title: "Márgenes y Rentabilidad" },
-    { id: "alertas",    icon: "🚨", title: "Alertas y Auditoría" },
-    { id: "reportes",   icon: "📈", title: "Reportes" },
   ]},
   { group: "Catálogos", items: [
     { id: "refacciones",icon: "🔧", title: "Catálogo de Refacciones" },
     { id: "proveedores",icon: "🏢", title: "Proveedores" },
-    { id: "almacenes",  icon: "🏬", title: "Almacenes / Agencias" },
-  ]},
-  { group: "Administración", items: [
-    { id: "usuarios",   icon: "👥", title: "Usuarios y Roles" },
-    { id: "parametros", icon: "⚙️", title: "Parámetros" },
   ]},
 ];
 
@@ -47,14 +44,7 @@ const pillClase = c => `<span class="pill ${CLASE_PILL[c] || "neu"}">${esc(c || 
 /* inventario de una refacción en la agencia actual */
 const invActual = r => (r.inventario || []).find(i => i.agencia === CONFIG.AGENCIA_ACTUAL);
 
-/* ---------- 3. Datos de ejemplo para pantallas nuevas ---------- */
-const SUCURSALES = [
-  { nombre: "Matriz Guadalajara",   ciudad: "Guadalajara, Jal.", refs: 2100, valor: 8450000 },
-  { nombre: "Sucursal Zapopan",     ciudad: "Zapopan, Jal.",     refs: 1740, valor: 6120000 },
-  { nombre: "Sucursal Tlaquepaque", ciudad: "Tlaquepaque, Jal.", refs: 1360, valor: 4380000 },
-  { nombre: "Sucursal Norte",       ciudad: "Guadalajara, Jal.", refs: 1180, valor: 3910000 },
-];
-
+/* ---------- 3. Datos de ejemplo ---------- */
 /* Distribución REAL observada en el DWH (fact.Refacciones_InventarioAlmacen).
    La mostramos como ejemplo de las categorías que sí usa la empresa. */
 const DIST_MOVIMIENTO = [
@@ -76,22 +66,6 @@ const BACKORDER = [
   { pedido:"PED-00127", cod:"RF-3001", desc:"Aceite sintético 5W-30", pedida:60, surtida:40, pend:20, prov:"Distribuidora Motriz MG", dias:9 },
   { pedido:"PED-00129", cod:"RF-6001", desc:"Banda de distribución (kit)", pedida:15, surtida:0, pend:15, prov:"Autopartes del Norte", dias:9 },
   { pedido:"PED-00131", cod:"RF-4001", desc:"Bujía de iridio", pedida:48, surtida:36, pend:12, prov:"Eléctrica Automotriz Guadalajara", dias:4 },
-];
-
-const USUARIOS = [
-  { nombre:"J. Ramírez", rol:"Solicitante",  agencia:"Matriz Guadalajara",   permisos:"Registra pedidos" },
-  { nombre:"L. Torres",  rol:"Aprobador",    agencia:"Sucursal Zapopan",     permisos:"Aprueba / rechaza pedidos" },
-  { nombre:"A. Gómez",   rol:"Almacén",      agencia:"Sucursal Tlaquepaque", permisos:"Recibe y registra entradas" },
-  { nombre:"M. Ruiz",    rol:"Gerente Posventa", agencia:"Todas",            permisos:"Ve todo · configura parámetros" },
-];
-
-/* márgenes de ejemplo (precio venta y costo inventados para ilustrar) */
-const MARGENES = [
-  { cod:"RF-1001", desc:"Balata delantera cerámica", costo:520, venta:980 },
-  { cod:"RF-2001", desc:"Filtro de aceite premium",  costo:95,  venta:210 },
-  { cod:"RF-3001", desc:"Aceite sintético 5W-30",    costo:145, venta:189 },
-  { cod:"RF-4001", desc:"Bujía de iridio",           costo:88,  venta:260 },
-  { cod:"RF-5002", desc:"Amortiguador trasero",      costo:640, venta:1180 },
 ];
 
 /* ---------- 4. Router ---------- */
@@ -119,6 +93,13 @@ function navigate(id) {
 }
 
 const bannerDemo = txt => `<div class="demo-banner"><span class="ai">ℹ️</span><div>${txt}</div></div>`;
+
+/* helper: lista "qué falta definir" */
+function featureList(titulo, items) {
+  return `<div class="feature mt"><h4>${esc(titulo)}</h4><ul>${items.map(([txt, tag]) =>
+    `<li><div>${txt}${tag === "must" ? '<span class="tag-must">imprescindible</span>' : tag === "nice" ? '<span class="tag-nice">deseable</span>' : ""}</div></li>`
+  ).join("")}</ul></div>`;
+}
 
 /* ---------- 5. Pantallas ---------- */
 const SCREENS = {};
@@ -412,83 +393,7 @@ SCREENS.recepcion = () => `
     ["Cotejar lo pedido vs. lo recibido con <b>lector de código de barras</b>.", "nice"],
   ])}`;
 
-/* ===== 5.5 Márgenes y Rentabilidad ===== */
-SCREENS.margenes = () => {
-  const filas = MARGENES.map(m => {
-    const margen = (m.venta - m.costo) / m.venta * 100;
-    const alerta = margen < 25;
-    return `<tr><td class="mono">${esc(m.cod)}</td><td>${esc(m.desc)}</td>
-      <td>${money(m.costo)}</td><td>${money(m.venta)}</td>
-      <td><b style="color:${alerta?'var(--danger)':'var(--ok)'}">${margen.toFixed(0)}%</b></td>
-      <td>${alerta ? '<span class="pill dgr">Margen bajo</span>' : '<span class="pill ok">OK</span>'}</td></tr>`;
-  }).join("");
-  return `
-  ${bannerDemo("Precios de ejemplo. Los márgenes reales saldrán de cruzar <b>costo</b> (compras) contra <b>precio de venta</b>.")}
-  <div class="page-intro"><h3>¿Para qué sirve esta pantalla?</h3>
-    <p>Muestra cuánto se gana por pieza (margen = (venta − costo) / venta). Si el margen cae debajo de un umbral, salta una <b>alerta</b> para revisar precios.</p></div>
-  <div class="panel">
-    <div class="panel-head"><div><h3>Márgenes por refacción</h3><div class="sub">Alerta cuando el margen es menor a 25%</div></div></div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Código</th><th>Descripción</th><th>Costo</th><th>Precio venta</th><th>Margen</th><th>Estatus</th></tr></thead>
-      <tbody>${filas}</tbody>
-    </table></div>
-  </div>
-  ${featureList("Dependencias / dudas", [
-    ["Necesita <b>precio de venta</b> y <b>costo</b> reales (hoy no hay precio en el catálogo).", "must"],
-    ["¿Qué <b>umbral de margen</b> dispara la alerta? (aquí usamos 25% de ejemplo).", "must"],
-  ])}`;
-};
-
-/* ===== 5.6 Alertas y Auditoría ===== */
-SCREENS.alertas = () => `
-  ${bannerDemo("Datos de ejemplo. Centraliza las alertas del módulo y el rastro de auditoría de las compras.")}
-  <div class="page-intro"><h3>¿Para qué sirve esta pantalla?</h3>
-    <p>Junta en un solo lugar los avisos importantes (sobre-stock, obsoletos, márgenes bajos, compras sospechosas) y deja <b>trazado</b> quién hizo qué, para poder auditar el proceso de compras.</p></div>
-  <div class="grid-2">
-    <div class="feature"><h4>Alertas activas (ejemplo)</h4>
-      <div class="mini-alert dgr"><div class="ic">⛔</div><div><div class="t">Pedido supera MOS máximo</div><div class="d">PED-00128 · Amortiguador trasero · MOS 1.80</div></div></div>
-      <div class="mini-alert warn"><div class="ic">💰</div><div><div class="t">Margen por debajo del umbral</div><div class="d">RF-3001 Aceite 5W-30 · margen 23%</div></div></div>
-      <div class="mini-alert info"><div class="ic">🕵️</div><div><div class="t">Compra de lento movimiento</div><div class="d">Se compró una pieza clasificada LENTO sin traslado disponible.</div></div></div>
-    </div>
-    <div class="feature"><h4>Bitácora de auditoría (ejemplo)</h4>
-      <ul>
-        <li><b>J. Ramírez</b> registró PED-00129 · 2026-07-05 09:14</li>
-        <li><b>L. Torres</b> aprobó PED-00126 · 2026-07-04 17:02</li>
-        <li><b>A. Gómez</b> recibió PED-00130 · 2026-07-06 11:40</li>
-        <li><b>M. Ruiz</b> cambió parámetro MOS máx. a 1.50 · 2026-07-01</li>
-      </ul>
-    </div>
-  </div>
-  ${featureList("Qué faltará definir con el negocio", [
-    ["¿Qué <b>eventos</b> se auditan y <b>quién</b> revisa las alertas?", "must"],
-    ["¿Las alertas se <b>notifican</b> (correo/pantalla) o solo se consultan aquí?", "nice"],
-  ])}`;
-
-/* ===== 5.7 Reportes ===== */
-SCREENS.reportes = () => {
-  const cols = [["Ene",60],["Feb",78],["Mar",52],["Abr",90],["May",70],["Jun",84],["Jul",46]];
-  const max = Math.max(...cols.map(c => c[1]));
-  const chart = cols.map(([m, v]) => `<div class="col"><div class="bar" style="height:${v/max*100}%"></div><div class="cap">${m}</div></div>`).join("");
-  const cards = [
-    ["📦","Compras por periodo","Monto y cantidad comprada por mes, sucursal o proveedor."],
-    ["🧊","Inventario obsoleto/lento","Capital inmovilizado y candidatos a traslado."],
-    ["💰","Márgenes de refacciones","Rentabilidad por pieza y por categoría."],
-    ["🔁","Traslados realizados","Movimientos entre sucursales y su impacto."],
-    ["📥","Backorder / no surtido","Pendientes de entrega por proveedor."],
-    ["🏢","Desempeño de proveedores","Tiempo de entrega y cumplimiento."],
-  ].map(([i,t,d]) => `<div class="report-card" onclick="alert('Abrir reporte: ${t} (demo)')"><div class="ic">${i}</div><div class="t">${t}</div><div class="d">${d}</div></div>`).join("");
-  return `
-  ${bannerDemo("Reportes de ejemplo. Todos exportables a Excel/PDF cuando se conecten a datos reales.")}
-  <div class="grid-2 wide-left">
-    <div class="panel"><div class="panel-head"><div><h3>Compras por mes</h3><div class="sub">Ejemplo · miles de pesos</div></div>
-      <button class="btn btn-ghost" onclick="alert('Exportar (demo)')">⬇ Exportar</button></div>
-      <div style="padding:14px 18px"><div class="chart-fake">${chart}</div></div>
-    </div>
-    <div class="feature"><h4>Reportes disponibles</h4><div class="report-grid">${cards}</div></div>
-  </div>`;
-};
-
-/* ===== 5.8 Catálogo de Refacciones ===== */
+/* ===== 5.5 Catálogo de Refacciones ===== */
 SCREENS.refacciones = () => `
   ${bannerDemo("Muestra del catálogo actual (sin precio todavía — es una de las decisiones clave con el negocio).")}
   <div class="panel">
@@ -513,7 +418,7 @@ INIT.refacciones = () => {
   const q = $("#qRef"); if (q) q.addEventListener("input", () => pinta(q.value));
 };
 
-/* ===== 5.9 Proveedores ===== */
+/* ===== 5.6 Proveedores ===== */
 SCREENS.proveedores = () => `
   ${bannerDemo("Catálogo de ejemplo. Se podrá dar de alta y editar desde aquí (hoy es fijo).")}
   <div class="panel">
@@ -530,70 +435,9 @@ SCREENS.proveedores = () => `
     ["<b>Tiempo de entrega</b> y condiciones de pago por proveedor.", "nice"],
   ])}`;
 
-/* ===== 5.10 Almacenes / Agencias ===== */
-SCREENS.almacenes = () => `
-  ${bannerDemo("Datos de ejemplo. En la base real hay <b>9 sucursales</b>; aquí mostramos 4 de muestra.")}
-  <div class="panel">
-    <div class="panel-head"><div><h3>Almacenes / Agencias</h3><div class="sub">Inventario por sucursal</div></div></div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Sucursal</th><th>Ciudad</th><th>Refacciones</th><th>Valor de inventario</th></tr></thead>
-      <tbody>${SUCURSALES.map(s => `<tr><td><b>${esc(s.nombre)}</b>${s.nombre===CONFIG.AGENCIA_ACTUAL?' <span class="pill info">actual</span>':''}</td>
-        <td>${esc(s.ciudad)}</td><td>${num(s.refs)}</td><td>${money(s.valor)}</td></tr>`).join("")}</tbody>
-    </table></div>
-  </div>`;
-
-/* ===== 5.11 Usuarios y Roles ===== */
-SCREENS.usuarios = () => `
-  ${bannerDemo("Datos de ejemplo. Los roles reales de permisos viven en la base <b>SEG</b> del ecosistema.")}
-  <div class="page-intro"><h3>¿Para qué sirve esta pantalla?</h3>
-    <p>Define <b>quién puede qué</b>: quién registra un pedido, quién lo aprueba y quién recibe la mercancía. Es la base del flujo de aprobación.</p></div>
-  <div class="panel">
-    <div class="panel-head"><div><h3>Usuarios del módulo</h3><div class="sub">Roles y alcance</div></div>
-      <button class="btn btn-primary" onclick="alert('Nuevo usuario (demo)')">＋ Nuevo</button></div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Nombre</th><th>Rol</th><th>Agencia</th><th>Permisos</th></tr></thead>
-      <tbody>${USUARIOS.map(u => `<tr><td><b>${esc(u.nombre)}</b></td><td><span class="pill info">${esc(u.rol)}</span></td>
-        <td>${esc(u.agencia)}</td><td>${esc(u.permisos)}</td></tr>`).join("")}</tbody>
-    </table></div>
-  </div>
-  ${featureList("Qué faltará definir con el negocio", [
-    ["¿El gerente ve <b>solo su agencia</b> o <b>todas</b>?", "must"],
-    ["¿Los roles se administran aquí o se toman de <b>SEG</b> (seguridad de ADCCore)?", "must"],
-  ])}`;
-
-/* ===== 5.12 Parámetros ===== */
-SCREENS.parametros = () => `
-  ${bannerDemo("Datos de ejemplo. Aquí se ajustarán las reglas del módulo sin tocar código.")}
-  <div class="page-intro"><h3>¿Para qué sirve esta pantalla?</h3>
-    <p>Permite que el negocio <b>ajuste las reglas</b> (MOS máximo, topes, umbrales) sin depender de programación.</p></div>
-  <div class="panel">
-    <div class="panel-head"><div><h3>Parámetros del módulo</h3><div class="sub">Valores de ejemplo</div></div></div>
-    <div style="padding:20px">
-      <div class="form-grid">
-        <div class="field"><label>MOS máximo permitido</label><input value="${CONFIG.MOS_MAX.toFixed(2)}" readonly></div>
-        <div class="field"><label>Umbral de margen bajo (%)</label><input value="25" readonly></div>
-        <div class="field"><label>Días para marcar backorder crítico</label><input value="7" readonly></div>
-        <div class="field"><label>Moneda</label><input value="${esc(CONFIG.MONEDA)}" readonly></div>
-      </div>
-      <div class="spacer"></div>
-      <button class="btn btn-primary" onclick="alert('Guardar parámetros (demo)')">Guardar cambios</button>
-    </div>
-  </div>
-  ${featureList("Dudas para el negocio", [
-    ["¿El MOS máximo debe ser <b>configurable por categoría o por refacción</b>?", "must"],
-    ["¿Cómo se calcula la <b>demanda mensual</b>? (promedio de N meses, del ERP, manual)", "must"],
-  ])}`;
-
 /* pantalla genérica de respaldo */
 SCREENS._todo = (item) => `
   <div class="page-intro"><h3>${esc(item.title)}</h3><p>Pantalla en construcción.</p></div>`;
-
-/* helper: lista "qué falta definir" */
-function featureList(titulo, items) {
-  return `<div class="feature mt"><h4>${esc(titulo)}</h4><ul>${items.map(([txt, tag]) =>
-    `<li><div>${txt}${tag === "must" ? '<span class="tag-must">imprescindible</span>' : tag === "nice" ? '<span class="tag-nice">deseable</span>' : ""}</div></li>`
-  ).join("")}</ul></div>`;
-}
 
 /* ---------- 6. Arranque ---------- */
 renderNav();
